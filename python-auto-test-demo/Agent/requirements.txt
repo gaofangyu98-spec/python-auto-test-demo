@@ -1,0 +1,18 @@
+# ===== 第一版核心依赖（OpenAPI解析 + Agent生成 + FastAPI + 执行）=====
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+pyyaml>=6.0.1
+requests>=2.31.0
+sqlalchemy>=2.0.25
+pytest>=8.0.0
+pytest-html>=4.1.0
+allure-pytest>=2.13.5
+
+# ===== AI Agent 层（第二版 RAG 阶段启用，先注释避免安装负担）=====
+# langchain>=0.2.0
+# langchain-ollama>=0.1.0
+# chromadb>=0.5.0
+
+# ===== 附属 UI 自动化模块（演示用，靠后启用）=====
+# playwright>=1.40.0

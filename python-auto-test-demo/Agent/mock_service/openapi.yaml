@@ -1,0 +1,188 @@
+openapi: "3.0.3"
+info:
+  title: 模拟游戏业务接口
+  version: "1.0.0"
+  description: 用于论文实验的模拟被测游戏业务接口（用户/道具/充值/PVP积分）
+servers:
+  - url: "http://localhost:9000"
+paths:
+  /api/users:
+    post:
+      summary: 创建用户
+      operationId: createUser
+      tags: [用户]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nickname, email, age]
+              properties:
+                nickname:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                  description: 昵称
+                email:
+                  type: string
+                  format: email
+                  description: 邮箱
+                age:
+                  type: integer
+                  minimum: 1
+                  maximum: 150
+                  description: 年龄
+      responses:
+        "200":
+          description: 创建成功
+        "400":
+          description: 邮箱格式不正确
+        "422":
+          description: 参数校验失败
+  /api/users/{user_id}:
+    get:
+      summary: 查询用户信息
+      operationId: getUserById
+      tags: [用户]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: 用户ID
+      responses:
+        "200":
+          description: 查询成功
+        "404":
+          description: 用户不存在
+    put:
+      summary: 更新用户信息
+      operationId: updateUser
+      tags: [用户]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 用户ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nickname, email, age]
+              properties:
+                nickname: { type: string, minLength: 1, maxLength: 20 }
+                email: { type: string, format: email }
+                age: { type: integer, minimum: 1, maximum: 150 }
+      responses:
+        "200": { description: 更新成功 }
+        "404": { description: 用户不存在 }
+    delete:
+      summary: 删除用户
+      operationId: deleteUser
+      tags: [用户]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 用户ID
+      responses:
+        "200": { description: 删除成功 }
+        "404": { description: 用户不存在 }
+  /api/items:
+    get:
+      summary: 道具列表（分页，需登录）
+      operationId: listItems
+      tags: [道具]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: size
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+      responses:
+        "200": { description: 查询成功 }
+        "401": { description: 未登录 }
+  /api/recharge:
+    post:
+      summary: 游戏充值
+      operationId: recharge
+      tags: [充值]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, amount, channel]
+              properties:
+                user_id: { type: integer, description: 用户ID }
+                amount:
+                  type: number
+                  exclusiveMinimum: 0
+                  description: 充值金额
+                channel:
+                  type: string
+                  enum: [wechat, alipay, bank]
+                  description: 支付渠道
+      responses:
+        "200": { description: 充值成功 }
+        "400": { description: 不支持的支付渠道 }
+        "404": { description: 用户不存在 }
+  /api/pvp/score/{user_id}:
+    get:
+      summary: 查询PVP积分
+      operationId: getPvpScore
+      tags: [PVP积分]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: 查询成功 }
+        "404": { description: 暂无记录 }
+    post:
+      summary: 更新PVP积分
+      operationId: updatePvpScore
+      tags: [PVP积分]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [score]
+              properties:
+                score:
+                  type: integer
+                  minimum: 0
+                  maximum: 10000
+                  description: PVP积分
+      responses:
+        "200": { description: 更新成功 }
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: 需要登录后获取的 Bearer Token
